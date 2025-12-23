@@ -277,7 +277,7 @@ export default function CloudSection() {
           </motion.div>
         </motion.div>
 
-        {/* Product Cards - Positioned below the sign */}
+        {/* Product Cards - Positioned bedlow the sign */}
         <motion.div
           style={{ opacity: bgOpacity }}
           className="absolute top-[35%] md:top-[42%] left-0 md:left-9 right-0 z-20 px-4 md:px-8 pointer-events-auto"
