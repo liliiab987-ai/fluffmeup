@@ -122,43 +122,45 @@ export default function CloudSection() {
         </motion.div>
 
         {/* Optimized SVG Smoke Filters - Reduced complexity for performance */}
-        <svg className="hidden">
-          <filter id="smoke-filter-1">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.008"
-              numOctaves="3"
-              seed="2"
-              result="turbulence"
-            />
-            <feDisplacementMap
-              in2="turbulence"
-              in="SourceGraphic"
-              scale="100"
-              xChannelSelector="R"
-              yChannelSelector="G"
-            />
-            <feGaussianBlur stdDeviation="12" />
-          </filter>
+        {!isMobile && (
+          <svg className="hidden">
+            <filter id="smoke-filter-1">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.008"
+                numOctaves="3"
+                seed="2"
+                result="turbulence"
+              />
+              <feDisplacementMap
+                in2="turbulence"
+                in="SourceGraphic"
+                scale="100"
+                xChannelSelector="R"
+                yChannelSelector="G"
+              />
+              <feGaussianBlur stdDeviation="12" />
+            </filter>
 
-          <filter id="smoke-filter-2">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.006"
-              numOctaves="3"
-              seed="7"
-              result="turbulence"
-            />
-            <feDisplacementMap
-              in2="turbulence"
-              in="SourceGraphic"
-              scale="120"
-              xChannelSelector="R"
-              yChannelSelector="G"
-            />
-            <feGaussianBlur stdDeviation="15" />
-          </filter>
-        </svg>
+            <filter id="smoke-filter-2">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.006"
+                numOctaves="3"
+                seed="7"
+                result="turbulence"
+              />
+              <feDisplacementMap
+                in2="turbulence"
+                in="SourceGraphic"
+                scale="120"
+                xChannelSelector="R"
+                yChannelSelector="G"
+              />
+              <feGaussianBlur stdDeviation="15" />
+            </filter>
+          </svg>
+        )}
 
         {/* Optimized Smoke Layers - 3 puffs for better performance - DESKTOP ONLY */}
         {!isMobile && (
@@ -290,7 +292,7 @@ export default function CloudSection() {
                   className="flex-shrink-0 snap-center"
                   initial={{ opacity: 0, x: 50 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "0px", amount: 0.3 }}
+                  viewport={{ once: true, margin: "-50px" }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
                   <motion.div

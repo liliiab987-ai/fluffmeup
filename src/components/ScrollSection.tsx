@@ -518,7 +518,7 @@ export default function ScrollSection() {
 
   return (
     <div ref={containerRef} className="relative w-full h-[600vh] z-30">
-      <div className="sticky top-0 left-0 w-full h-screen overflow-hidden">
+      <div className="sticky top-0 left-0 w-full h-[100dvh] overflow-hidden">
         {/* Background Layer */}
         <div
           className="absolute inset-0 z-0 transition-transform duration-300 ease-out"
@@ -537,7 +537,7 @@ export default function ScrollSection() {
           {/* Shadows disabled for performance */}
           <Canvas
             camera={{ position: [0, 0, 8], fov: 45 }}
-            dpr={[1, 1.5]}
+            dpr={[1, 1.2]}
             style={{ touchAction: "pan-y" }} // Allow vertical scrolling on mobile
             gl={{ preserveDrawingBuffer: true, powerPreference: "high-performance" }} // Improve mobile compatibility
           >
