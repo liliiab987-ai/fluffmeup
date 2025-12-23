@@ -288,10 +288,10 @@ export default function CloudSection() {
                 <motion.div
                   key={product.id}
                   className="flex-shrink-0 snap-center"
-                  initial={{ opacity: 0, x: 100 }}
+                  initial={{ opacity: 0, x: 50 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true, margin: "0px", amount: 0.3 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
                   <motion.div
                     className="relative w-[85vw] md:w-80 h-[24rem] md:h-[28rem] rounded-3xl overflow-hidden"
