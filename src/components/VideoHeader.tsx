@@ -1,13 +1,25 @@
 "use client";
 
+import { useRef, useEffect } from "react";
+
 interface VideoHeaderProps {
   isNavHovered: boolean;
 }
 
 export default function VideoHeader({ isNavHovered }: VideoHeaderProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch((e) => {
+        console.log("Autoplay prevented:", e);
+      });
+    }
+  }, []);
   return (
     <div className="absolute top-0 left-0 w-full h-screen z-0 overflow-hidden pointer-events-none">
       <video
+        ref={videoRef}
         className="absolute top-0 left-0 w-full h-full object-cover scale-100 object-center"
         autoPlay
         muted
@@ -23,9 +35,8 @@ export default function VideoHeader({ isNavHovered }: VideoHeaderProps) {
 
       {/* Fancy Sparkle Border Effect */}
       <div
-        className={`absolute inset-0 transition-opacity duration-500 pointer-events-none ${
-          isNavHovered ? "opacity-100" : "opacity-0"
-        }`}
+        className={`absolute inset-0 transition-opacity duration-500 pointer-events-none ${isNavHovered ? "opacity-100" : "opacity-0"
+          }`}
       >
         {/* Main Glowing Border */}
         <div

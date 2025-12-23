@@ -68,7 +68,7 @@ export default function MacaronSection() {
           {/* Rolling Macaron */}
           <motion.div
             style={{ x, rotate }}
-            className="w-[70vw] h-[70vw] md:w-88 md:h-88 z-20 relative mt-4 md:mt-4"
+            className="w-[50vw] h-[50vw] md:w-88 md:h-88 z-20 relative mt-4 md:mt-4"
           >
             <img
               src="/01-Photoroom.webp"

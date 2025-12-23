@@ -160,73 +160,75 @@ export default function CloudSection() {
           </filter>
         </svg>
 
-        {/* Optimized Smoke Layers - 3 puffs for better performance */}
-        <motion.div
-          style={{
-            scale,
-            opacity: cloudOpacity,
-            willChange: "transform, opacity",
-          }}
-          className="absolute inset-0 z-10"
-        >
-          {/* Puff 1: Large Pink Cloud (Bottom-Center) */}
+        {/* Optimized Smoke Layers - 3 puffs for better performance - DESKTOP ONLY */}
+        {!isMobile && (
           <motion.div
-            className="absolute w-[140%] h-[140%] left-[-20%] top-[25%] bg-[#F7ADCF] pointer-events-none"
             style={{
-              filter: "url(#smoke-filter-1)",
-              opacity: 0.7,
-              borderRadius: "50%",
-              willChange: "transform",
+              scale,
+              opacity: cloudOpacity,
+              willChange: "transform, opacity",
             }}
-            animate={{
-              y: ["0%", "-10%"],
-            }}
-            transition={{
-              duration: 18,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
+            className="absolute inset-0 z-10"
+          >
+            {/* Puff 1: Large Pink Cloud (Bottom-Center) */}
+            <motion.div
+              className="absolute w-[140%] h-[140%] left-[-20%] top-[25%] bg-[#F7ADCF] pointer-events-none"
+              style={{
+                filter: "url(#smoke-filter-1)",
+                opacity: 0.7,
+                borderRadius: "50%",
+                willChange: "transform",
+              }}
+              animate={{
+                y: ["0%", "-10%"],
+              }}
+              transition={{
+                duration: 18,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            />
 
-          {/* Puff 2: White Wisp (Offset) */}
-          <motion.div
-            className="absolute w-[130%] h-[130%] left-[-30%] top-[30%] bg-white pointer-events-none"
-            style={{
-              filter: "url(#smoke-filter-2)",
-              opacity: 0.5,
-              borderRadius: "50%",
-              willChange: "transform",
-            }}
-            animate={{
-              y: ["0%", "-15%"],
-              x: ["0%", "3%"],
-            }}
-            transition={{
-              duration: 22,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
+            {/* Puff 2: White Wisp (Offset) */}
+            <motion.div
+              className="absolute w-[130%] h-[130%] left-[-30%] top-[30%] bg-white pointer-events-none"
+              style={{
+                filter: "url(#smoke-filter-2)",
+                opacity: 0.5,
+                borderRadius: "50%",
+                willChange: "transform",
+              }}
+              animate={{
+                y: ["0%", "-15%"],
+                x: ["0%", "3%"],
+              }}
+              transition={{
+                duration: 22,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            />
 
-          {/* Puff 3: Pink-White Mix (Center) */}
-          <motion.div
-            className="absolute w-[120%] h-[120%] left-[-10%] top-[20%] bg-[#F9C4D8] pointer-events-none"
-            style={{
-              filter: "url(#smoke-filter-1)",
-              opacity: 0.65,
-              borderRadius: "50%",
-              willChange: "transform",
-            }}
-            animate={{
-              y: ["0%", "-12%"],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
-        </motion.div>
+            {/* Puff 3: Pink-White Mix (Center) */}
+            <motion.div
+              className="absolute w-[120%] h-[120%] left-[-10%] top-[20%] bg-[#F9C4D8] pointer-events-none"
+              style={{
+                filter: "url(#smoke-filter-1)",
+                opacity: 0.65,
+                borderRadius: "50%",
+                willChange: "transform",
+              }}
+              animate={{
+                y: ["0%", "-12%"],
+              }}
+              transition={{
+                duration: 20,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            />
+          </motion.div>
+        )}
 
         {/* Hanging Sign Text - Header at top of section */}
         <motion.div

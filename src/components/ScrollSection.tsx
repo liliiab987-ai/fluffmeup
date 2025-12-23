@@ -539,6 +539,7 @@ export default function ScrollSection() {
             camera={{ position: [0, 0, 8], fov: 45 }}
             dpr={[1, 1.5]}
             style={{ touchAction: "pan-y" }} // Allow vertical scrolling on mobile
+            gl={{ preserveDrawingBuffer: true, powerPreference: "high-performance" }} // Improve mobile compatibility
           >
             <Suspense fallback={null}>
               <Scene scrollProgress={scrollProgress} />
