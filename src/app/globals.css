@@ -1,0 +1,271 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Fredoka+One&display=swap");
+
+@import "tailwindcss";
+
+:root {
+  /* Brand Colors */
+  --color-pink-primary: #f395c2;
+  --color-pink-light: #f7adcf;
+  --color-gold: #efc576;
+  --color-white: #ffffff;
+  --color-dark: #1a1a1a;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(
+    135deg,
+    var(--color-pink-primary),
+    var(--color-pink-light)
+  );
+  --gradient-accent: linear-gradient(
+    135deg,
+    var(--color-gold),
+    var(--color-pink-light)
+  );
+  --gradient-hero: linear-gradient(
+    180deg,
+    rgba(243, 149, 194, 0.1) 0%,
+    rgba(247, 173, 207, 0.05) 50%,
+    rgba(239, 197, 118, 0.1) 100%
+  );
+
+  /* Shadows */
+  --shadow-soft: 0 10px 40px rgba(243, 149, 194, 0.15);
+  --shadow-medium: 0 20px 60px rgba(243, 149, 194, 0.25);
+  --shadow-hard: 0 30px 80px rgba(243, 149, 194, 0.35);
+
+  /* Typography */
+  --font-heading: "Playfair Display", serif;
+  --font-body: "Inter", sans-serif;
+  --font-playful: "Fredoka One", cursive;
+
+  /* Spacing */
+  --section-padding: clamp(60px, 10vw, 120px);
+  --container-max: 1400px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-dark);
+  background: var(--color-white);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  cursor: url("/strawberry.svg") 16 16, auto;
+}
+
+/* Smooth Scrolling Container */
+.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* Typography Utilities */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-accent {
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-soft);
+}
+
+.glass-dark {
+  background: rgba(243, 149, 194, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(243, 149, 194, 0.2);
+}
+
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 40px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: var(--color-white);
+  box-shadow: var(--shadow-soft);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-pink-primary);
+  border: 2px solid var(--color-pink-primary);
+}
+
+.btn-outline:hover {
+  background: var(--color-pink-primary);
+  color: var(--color-white);
+}
+
+/* Container */
+.container {
+  max-width: var(--container-max);
+  margintop: 10 auto;
+  padding: 0 20px;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 0 40px;
+  }
+}
+
+/* Section Spacing */
+section {
+  padding: var(--section-padding) 0;
+}
+
+/* Animations */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-white);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gradient-primary);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-pink-primary);
+}
+
+/* Selection */
+::selection {
+  background: var(--color-pink-primary);
+  color: var(--color-white);
+}
+
+::-moz-selection {
+  background: var(--color-pink-primary);
+  color: var(--color-white);
+}
+
+/* Custom Animation for the Text */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up-delay {
+  opacity: 0;
+  /* Start hidden */
+  animation: fadeInUp 1.2s ease-out forwards;
+  animation-delay: 1s;
+  /* Wait 1 second before starting */
+}
