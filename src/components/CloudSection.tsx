@@ -399,7 +399,7 @@ export default function CloudSection() {
                 }}
                 onClick={() => {
                   // TODO: Replace with actual store URL
-                  window.open("https://your-store-url.com", "_blank");
+                  window.open("https://store.fluffmeup.com", "_blank");
                 }}
                 whileHover={{
                   scale: 1.1,
