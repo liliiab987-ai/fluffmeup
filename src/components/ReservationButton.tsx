@@ -8,7 +8,7 @@ export default function ReservationButton() {
       <div className="flex flex-col-reverse md:flex-row items-center gap-2 md:gap-4">
         {/* Address */}
         <p className="text-white font-semibold whitespace-nowrap">
-          802 Danforth, Toronto
+          802 Danforth, Toronto, M4J 1L6
         </p>
 
         {/* Button */}
