@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, Suspense, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { motion } from "framer-motion";
 import {
   Text,
   useTexture,
