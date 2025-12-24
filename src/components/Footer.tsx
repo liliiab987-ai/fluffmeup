@@ -94,7 +94,7 @@ export default function Footer() {
             var(--color-white) 0%,
             rgba(243, 149, 194, 0.05) 100%
           );
-          padding: 80px 0 40px;
+          padding: 160px 0 40px;
           border-top: 1px solid rgba(243, 149, 194, 0.1);
         }
 

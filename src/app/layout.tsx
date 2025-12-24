@@ -18,6 +18,8 @@ const inter = Inter({
 import { defaultMetadata } from "./metadata";
 import LocalBusinessSchema from "@/components/LocalBusinessSchema";
 
+import GoogleAnalytics from "@/components/GoogleAnalytics";
+
 export const metadata: Metadata = defaultMetadata;
 
 export default function RootLayout({
@@ -28,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${titanOne.variable} ${inter.variable}`} suppressHydrationWarning>
+        <GoogleAnalytics />
         <LocalBusinessSchema />
         {children}
       </body>

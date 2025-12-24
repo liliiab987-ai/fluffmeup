@@ -262,10 +262,10 @@ export default function CloudSection() {
             <h2
               className="font-bold tracking-tight px-6 py-4 md:px-12 md:py-6 rounded-2xl id-11"
               style={{
-                marginTop: isMobile ? "65%" : "0", // Mobile-only margin
+                marginTop: isMobile ? "65%" : "-14%", // Mobile-only margin
                 fontFamily: "Comfortaa, sans-serif",
                 color: "white",
-                fontSize: "clamp(1.5rem, 5vw, 4.5rem)",
+                fontSize: "clamp(1.5rem, 4vw, 3.5rem)",
                 textShadow:
                   "4px 4px 0px #F7ADCF, " +
                   "8px 8px 20px rgba(247, 173, 207, 0.8), " +
@@ -286,7 +286,7 @@ export default function CloudSection() {
         {/* Product Cards - Positioned below the sign */}
         <motion.div
           style={{ opacity: bgOpacity }}
-          className="absolute top-[35%] md:top-[42%] left-0 md:left-9 right-0 z-20 px-4 md:px-8 pointer-events-auto"
+          className="absolute top-[35%] md:top-[32%] left-0 md:left-9 right-0 z-20 px-4 md:px-8 pointer-events-auto"
         >
           <div className="max-w-8xl mx-auto">
             <div className="flex gap-8 overflow-x-auto pb-8 snap-x snap-mandatory scroll-smooth scrollbar-hide pl-[calc((100vw-85vw)/2)] md:pl-0">
@@ -300,7 +300,7 @@ export default function CloudSection() {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
                   <motion.div
-                    className="relative w-[85vw] md:w-80 h-[24rem] md:h-[28rem] rounded-3xl overflow-hidden"
+                    className="relative w-[85vw] md:w-72 h-[24rem] md:h-[26rem] rounded-3xl overflow-hidden"
                     style={{
                       background:
                         "linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(247, 173, 207, 0.2) 100%)",

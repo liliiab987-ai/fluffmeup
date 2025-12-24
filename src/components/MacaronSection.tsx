@@ -68,7 +68,7 @@ export default function MacaronSection() {
           {/* Rolling Macaron */}
           <motion.div
             style={{ x, rotate }}
-            className="w-[40vw] h-[40vw] md:w-88 md:h-88 z-20 relative mt-4 md:mt-4"
+            className="w-[140vw] h-[40vw] md:w-88 md:h-88 z-20 relative mt-4 md:mt-4"
           >
             <img
               src="/01-Photoroom.webp"
@@ -81,7 +81,7 @@ export default function MacaronSection() {
           {/* Desktop Title (Original behavior) */}
           <motion.div
             style={{ x: textX, scale: textScale }}
-            className="hidden md:block absolute left-0 z-10 whitespace-nowrap pl-72 pt-8 text-left"
+            className="hidden md:block absolute left-0 z-10 whitespace-nowrap pl-72 pt-24 text-left" // Increased pt-8 to pt-24 (~5% down)
             transition={{
               scale: {
                 type: "tween",
@@ -94,13 +94,14 @@ export default function MacaronSection() {
               style={{
                 fontFamily: "Comfortaa, sans-serif",
                 color: "white",
-                fontSize: "clamp(1rem, 12vw, 10rem)",
+                fontSize: "clamp(1rem, 9vw, 8rem)",
                 textShadow:
                   "4px 4px 0px rgb(255, 255, 255), " +
                   "8px 8px 20px #F7ADCF, " +
                   "0 0 10px rgb(255, 255, 255)",
-                lineHeight: 1.7,
-                WebkitTextStroke: "10px rgb(255, 255, 255)",
+                lineHeight: 1.5,
+                WebkitTextStroke: "8px rgb(255, 255, 255)",
+                marginTop: "5%",
               }}
             >
               A Place for you
@@ -142,7 +143,7 @@ export default function MacaronSection() {
           {/* This component creates a rotating light effect on the border */}
           {/* It uses a mask to only show the gradient on the border area */}
           <motion.div
-            className="absolute bottom-0 left-4 right-4 md:absolute md:left-auto md:right-[-35%] md:top-[60%] z-30 w-auto max-w-none md:max-w-[55%] p-6 md:p-8 rounded-t-3xl md:rounded-3xl shadow-2xl backdrop-blur-xl border border-white/50 overflow-hidden md:mt-0"
+            className="absolute bottom-0 left-4 right-4 md:absolute md:left-auto md:right-[-17%] md:top-[60%] z-30 w-auto max-w-none md:max-w-[55%] p-6 md:p-8 rounded-t-3xl md:rounded-3xl shadow-2xl backdrop-blur-xl border border-white/50 overflow-hidden md:mt-0"
             style={{
               background:
                 "linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(247, 173, 207, 0.2) 100%)",
