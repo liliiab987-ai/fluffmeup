@@ -67,7 +67,6 @@ export default function VideoHeader({ isNavHovered }: VideoHeaderProps) {
         muted
         loop
         playsInline
-        playsInline
         preload="metadata"
       >
         <source src="/video.mp4" type="video/mp4" />
