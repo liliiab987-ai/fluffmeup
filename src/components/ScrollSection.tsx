@@ -161,7 +161,9 @@ function MobileVideoSurface({
   useEffect(() => {
     // Non-blocking video loading
     const video = document.createElement("video");
-    video.src = videoUrl;
+    // Transform to mobile-optimized video: "/video1.mp4" -> "/Mobile_video1.mp4"
+    const mobileUrl = videoUrl.replace(/\/(video\d*\.mp4)/, "/Mobile_$1");
+    video.src = mobileUrl;
     video.crossOrigin = "Anonymous";
     video.loop = true;
     video.muted = true;
