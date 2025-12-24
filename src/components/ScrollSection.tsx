@@ -98,7 +98,9 @@ const CARD_DATA = [
 
 // --- Sub-components for Suspense-based loading ---
 
-function VideoSurface({
+// --- Sub-components for Suspense-based loading ---
+
+function DesktopVideoSurface({
   videoUrl,
   width,
   height,
@@ -111,49 +113,21 @@ function VideoSurface({
 }) {
   const videoTexture = useVideoTexture(videoUrl, {
     unsuspend: "canplay",
-    muted: true, // Always start muted for autoplay policy
+    muted: !isExpanded,
     loop: true,
     start: true,
     playsInline: true,
-    crossOrigin: "Anonymous",
   });
 
   useEffect(() => {
     videoTexture.colorSpace = THREE.SRGBColorSpace;
     const video = videoTexture.image;
-
-    // Aggressive mobile autoplay enforcement
     if (video) {
-      video.playsInline = true;
-      video.muted = true; // Crucial for mobile autoplay
-      video.loop = true;
-
-      const forcePlay = () => {
-        video.play().then(() => {
-          // If expanded, we might want sound, but start muted to ensure play
-          if (isExpanded) {
-            video.muted = false;
-            // video.volume = 0.5; // Optional
-          }
-        }).catch((e) => {
-          console.warn("Autoplay blocked, waiting for interaction", e);
-        });
-      };
-
-      forcePlay();
-
-      // Retry on any user interaction (touch/scroll)
-      const handleUserInteraction = () => {
-        if (video.paused) forcePlay();
-      };
-
-      window.addEventListener('touchstart', handleUserInteraction, { passive: true });
-      window.addEventListener('scroll', handleUserInteraction, { passive: true });
-
-      return () => {
-        window.removeEventListener('touchstart', handleUserInteraction);
-        window.removeEventListener('scroll', handleUserInteraction);
-      };
+      video.muted = !isExpanded;
+      if (isExpanded) {
+        video.volume = 0.5;
+        video.play().catch((e) => console.error("Video play failed", e));
+      }
     }
   }, [videoTexture, isExpanded]);
 
@@ -164,6 +138,106 @@ function VideoSurface({
         map={videoTexture}
         toneMapped={false}
         color="white"
+        side={THREE.FrontSide}
+      />
+    </mesh>
+  );
+}
+
+function MobileVideoSurface({
+  videoUrl,
+  width,
+  height,
+  isExpanded,
+}: {
+  videoUrl: string;
+  width: number;
+  height: number;
+  isExpanded: boolean;
+}) {
+  const [texture, setTexture] = useState<THREE.VideoTexture | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    // Non-blocking video loading
+    const video = document.createElement("video");
+    video.src = videoUrl;
+    video.crossOrigin = "Anonymous";
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+
+    // Critical for iOS: load immediately but don't block
+    video.load();
+
+    const tex = new THREE.VideoTexture(video);
+    tex.colorSpace = THREE.SRGBColorSpace;
+
+    videoRef.current = video;
+    setTexture(tex);
+
+    // Attempt autoplay
+    const tryPlay = () => {
+      video.play().catch(() => { }); // Ignore initial fail
+    };
+    tryPlay();
+
+    // Unlock on interaction
+    const unlock = () => {
+      if (video.paused) {
+        video.play().then(() => {
+          video.muted = true;
+        }).catch(console.error);
+      }
+    };
+
+    // Attach passive listeners to avoid scroll blocking
+    window.addEventListener("touchstart", unlock, { passive: true });
+    window.addEventListener("scroll", unlock, { passive: true });
+    window.addEventListener("click", unlock, { passive: true });
+
+    return () => {
+      video.pause();
+      video.src = "";
+      video.remove();
+      tex.dispose();
+      window.removeEventListener("touchstart", unlock);
+      window.removeEventListener("scroll", unlock);
+      window.removeEventListener("click", unlock);
+    };
+  }, [videoUrl]);
+
+  // Handle expansion sound
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      if (isExpanded) {
+        video.muted = false;
+        video.volume = 0.5;
+      } else {
+        video.muted = true;
+      }
+    }
+  }, [isExpanded]);
+
+  // Manual texture update loop since we're not using Drei
+  useFrame(() => {
+    if (texture) {
+      texture.needsUpdate = true;
+    }
+  });
+
+  return (
+    <mesh position={[0, 0.2, 0.06]}>
+      <planeGeometry args={[width, height]} />
+      {/* 
+        Render white card initially (instant feedback), 
+        then swap to video texture when available 
+      */}
+      <meshBasicMaterial
+        map={texture || undefined}
+        color={texture ? "white" : "#F7ADCF"} // Pink placeholder until video loads
+        toneMapped={false}
         side={THREE.FrontSide}
       />
     </mesh>
@@ -319,12 +393,28 @@ function SpiralCard({
         Video Only - Manual Texture Management
         No Suspense needed as we handle the video element manually
       */}
-      <VideoSurface
-        videoUrl={data.video}
-        width={cardWidth - 0.1}
-        height={cardHeight * 0.75}
-        isExpanded={isExpanded}
-      />
+      {/* 
+        Dual Strategy:
+        - Mobile: Non-blocking Async Video (Prevents visibility issues/crashes)
+        - Desktop: Standard Suspense Video (Better integration/quality)
+      */}
+      {isMobile ? (
+        <MobileVideoSurface
+          videoUrl={data.video}
+          width={cardWidth - 0.1}
+          height={cardHeight * 0.75}
+          isExpanded={isExpanded}
+        />
+      ) : (
+        <Suspense fallback={null}>
+          <DesktopVideoSurface
+            videoUrl={data.video}
+            width={cardWidth - 0.1}
+            height={cardHeight * 0.75}
+            isExpanded={isExpanded}
+          />
+        </Suspense>
+      )}
 
       <mesh position={[0, 0, 0]}>
         <shapeGeometry args={[shape]} />
