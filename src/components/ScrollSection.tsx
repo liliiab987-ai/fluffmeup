@@ -61,37 +61,37 @@ const CARD_DATA = [
   {
     title: "CHOCOLATE\nSTRAWBERRIES",
     icon: "☕",
-    image: "/01-Photoroom.webp",
+    image: "/treats.webp",
     video: "/video1.mp4",
   },
   {
     title: "SWEET \nTREATS",
     icon: "🌡️",
-    image: "/0.2-Photoroom.webp",
+    image: "/macaroncake.webp",
     video: "/video2.mp4",
   },
   {
     title: "FLAVOR\nNOTES",
     icon: "🍒",
-    image: "/03-Photoroom.webp",
+    image: "/merengue.webp",
     video: "/video3.mp4",
   },
   {
     title: "PASTRY\nDESSERTS",
     icon: "💧",
-    image: "/04-Photoroom.webp",
+    image: "/merenguecake.webp",
     video: "/video4.mp4",
   },
   {
     title: "Heart Delight",
     icon: "🌍",
-    image: "/01-Photoroom.webp",
+    image: "/macarroncake.webp",
     video: "/video5.mp4",
   },
   {
     title: "SPECIAL\nGIFTS ",
     icon: "⭐",
-    image: "/04-Photoroom.webp",
+    image: "/gingerman.webp",
     video: "/video7.mp4",
   },
 ];
@@ -144,8 +144,6 @@ function DesktopVideoSurface({
   );
 }
 
-
-
 function MobileVideoSurface({
   videoUrl,
   width,
@@ -161,7 +159,9 @@ function MobileVideoSurface({
   imageUrl: string;
   shouldLoad: boolean;
 }) {
-  const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
+  const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(
+    null
+  );
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [useVideoFallback, setUseVideoFallback] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -211,7 +211,7 @@ function MobileVideoSurface({
     // Video ready event handlers
     const onCanPlay = () => {
       setIsVideoReady(true);
-      video.play().catch(() => { });
+      video.play().catch(() => {});
     };
 
     const onLoadedData = () => {
@@ -249,10 +249,13 @@ function MobileVideoSurface({
     // Unlock on interaction
     const unlock = () => {
       if (video && video.paused && shouldLoad) {
-        video.play().then(() => {
-          video.muted = true;
-          setIsVideoReady(true);
-        }).catch(() => { });
+        video
+          .play()
+          .then(() => {
+            video.muted = true;
+            setIsVideoReady(true);
+          })
+          .catch(() => {});
       }
     };
 
@@ -285,7 +288,7 @@ function MobileVideoSurface({
       if (isExpanded) {
         video.muted = false;
         video.volume = 0.5;
-        video.play().catch(() => { });
+        video.play().catch(() => {});
       } else {
         video.muted = true;
       }
@@ -301,7 +304,10 @@ function MobileVideoSurface({
 
   // Determine which texture to use
   // Show image if: Fallback ON, OR Video Not Ready, OR Should Not Load
-  const activeTexture = (useVideoFallback || !isVideoReady || !shouldLoad) ? imageTexture : videoTexture;
+  const activeTexture =
+    useVideoFallback || !isVideoReady || !shouldLoad
+      ? imageTexture
+      : videoTexture;
 
   return (
     <mesh position={[0, 0.2, 0.06]}>
@@ -739,8 +745,9 @@ export default function ScrollSection() {
             backgroundImage: "url(/imgbackground.webp)",
             backgroundSize: "cover",
             backgroundPosition: "center",
-            transform: `scale(1.05) translate(${(mousePosition.x - 0.5) * 20
-              }px, ${(mousePosition.y - 0.5) * 20}px)`,
+            transform: `scale(1.05) translate(${
+              (mousePosition.x - 0.5) * 20
+            }px, ${(mousePosition.y - 0.5) * 20}px)`,
             opacity: 1,
           }}
         />
