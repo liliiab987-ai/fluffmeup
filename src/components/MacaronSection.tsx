@@ -130,6 +130,7 @@ export default function MacaronSection() {
                 WebkitBackdropFilter: "blur(10px)",
                 border: "2px solid rgba(255, 255, 255, 0.3)",
                 boxShadow: "0 8px 32px 0 rgba(247, 173, 207, 0.4)",
+                marginTop: "25%",
               }}
             >
               A Place for you

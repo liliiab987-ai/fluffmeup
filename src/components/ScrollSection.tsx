@@ -149,14 +149,25 @@ function MobileVideoSurface({
   width,
   height,
   isExpanded,
+  imageUrl,
 }: {
   videoUrl: string;
   width: number;
   height: number;
   isExpanded: boolean;
+  imageUrl: string;
 }) {
-  const [texture, setTexture] = useState<THREE.VideoTexture | null>(null);
+  const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
+  const [isVideoReady, setIsVideoReady] = useState(false);
+  const [useVideoFallback, setUseVideoFallback] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Load static image as fallback using useTexture (non-blocking)
+  const imageTexture = useTexture(imageUrl);
+
+  useEffect(() => {
+    imageTexture.colorSpace = THREE.SRGBColorSpace;
+  }, [imageTexture]);
 
   useEffect(() => {
     // Non-blocking video loading
@@ -168,37 +179,65 @@ function MobileVideoSurface({
     video.loop = true;
     video.muted = true;
     video.playsInline = true;
-
-    // Critical for iOS: load immediately but don't block
-    video.load();
-
-    const tex = new THREE.VideoTexture(video);
-    tex.colorSpace = THREE.SRGBColorSpace;
+    video.autoplay = true;
 
     videoRef.current = video;
-    setTexture(tex);
 
-    // Attempt autoplay
-    const tryPlay = () => {
-      video.play().catch(() => { }); // Ignore initial fail
+    // Video ready event handlers
+    const onCanPlay = () => {
+      setIsVideoReady(true);
+      video.play().catch(() => { });
     };
-    tryPlay();
+
+    const onLoadedData = () => {
+      setIsVideoReady(true);
+    };
+
+    const onError = () => {
+      console.warn("Video failed to load, using static image");
+      setUseVideoFallback(true);
+    };
+
+    video.addEventListener("canplay", onCanPlay);
+    video.addEventListener("loadeddata", onLoadedData);
+    video.addEventListener("error", onError);
+
+    // Create texture
+    const tex = new THREE.VideoTexture(video);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    setVideoTexture(tex);
+
+    // Load video
+    video.load();
+
+    // Timeout fallback - if video doesn't start in 3 seconds, use image
+    const timeoutId = setTimeout(() => {
+      if (!isVideoReady) {
+        console.warn("Video timeout, falling back to static image");
+        setUseVideoFallback(true);
+      }
+    }, 3000);
 
     // Unlock on interaction
     const unlock = () => {
       if (video.paused) {
         video.play().then(() => {
           video.muted = true;
-        }).catch(console.error);
+          setIsVideoReady(true);
+        }).catch(() => { });
       }
     };
 
-    // Attach passive listeners to avoid scroll blocking
+    // Attach passive listeners
     window.addEventListener("touchstart", unlock, { passive: true });
     window.addEventListener("scroll", unlock, { passive: true });
     window.addEventListener("click", unlock, { passive: true });
 
     return () => {
+      clearTimeout(timeoutId);
+      video.removeEventListener("canplay", onCanPlay);
+      video.removeEventListener("loadeddata", onLoadedData);
+      video.removeEventListener("error", onError);
       video.pause();
       video.src = "";
       video.remove();
@@ -207,38 +246,38 @@ function MobileVideoSurface({
       window.removeEventListener("scroll", unlock);
       window.removeEventListener("click", unlock);
     };
-  }, [videoUrl]);
+  }, [videoUrl, isVideoReady]);
 
   // Handle expansion sound
   useEffect(() => {
     const video = videoRef.current;
-    if (video) {
+    if (video && isVideoReady) {
       if (isExpanded) {
         video.muted = false;
         video.volume = 0.5;
+        video.play().catch(() => { });
       } else {
         video.muted = true;
       }
     }
-  }, [isExpanded]);
+  }, [isExpanded, isVideoReady]);
 
-  // Manual texture update loop since we're not using Drei
+  // Manual texture update loop
   useFrame(() => {
-    if (texture) {
-      texture.needsUpdate = true;
+    if (videoTexture && isVideoReady && !useVideoFallback) {
+      videoTexture.needsUpdate = true;
     }
   });
+
+  // Determine which texture to use
+  const activeTexture = (useVideoFallback || !isVideoReady) ? imageTexture : videoTexture;
 
   return (
     <mesh position={[0, 0.2, 0.06]}>
       <planeGeometry args={[width, height]} />
-      {/* 
-        Render white card initially (instant feedback), 
-        then swap to video texture when available 
-      */}
       <meshBasicMaterial
-        map={texture || undefined}
-        color={texture ? "white" : "#F7ADCF"} // Pink placeholder until video loads
+        map={activeTexture || undefined}
+        color={activeTexture ? "white" : "#F7ADCF"}
         toneMapped={false}
         side={THREE.FrontSide}
       />
@@ -403,6 +442,7 @@ function SpiralCard({
       {isMobile ? (
         <MobileVideoSurface
           videoUrl={data.video}
+          imageUrl={data.image}
           width={cardWidth - 0.1}
           height={cardHeight * 0.75}
           isExpanded={isExpanded}
