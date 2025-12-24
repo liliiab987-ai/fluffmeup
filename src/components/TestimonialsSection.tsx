@@ -73,7 +73,8 @@ const SnowParticles = () => {
       wind: number;
     }[] = [];
 
-    const particleCount = 100;
+    const isMobile = window.innerWidth < 768;
+    const particleCount = isMobile ? 30 : 100;
     for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * width,
@@ -232,7 +233,7 @@ export default function TestimonialsSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: i * 0.1 }}
               whileHover={{ scale: 1.05, rotate: 0, zIndex: 10 }} // Popping effect
-              className="relative flex-shrink-0 w-[85vw] md:w-[90%] mx-auto snap-center aspect-[3/4] p-3 rounded-2xl bg-white shadow-xl cursor-pointer "
+              className="relative flex-shrink-0 w-[85vw] md:w-[80%] mx-auto snap-center aspect-[3/4] p-3 rounded-2xl bg-white shadow-xl cursor-pointer "
               style={{
                 boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
                 transformOrigin: "center center",

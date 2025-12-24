@@ -84,11 +84,7 @@ export default function CloudSection() {
     offset: ["start end", "end end"],
   });
 
-  // Scale: Clouds grow as we fly into them
-  const scale = useTransform(scrollYProgress, [0, 0.8], [1, 3]);
 
-  // Opacity: Clouds fade out early, before sign appears
-  const cloudOpacity = useTransform(scrollYProgress, [0.5, 0.7], [1, 0]);
 
   // Background Image Opacity: Reveals as clouds clear (mobile: always visible)
   const bgOpacity = useTransform(
@@ -125,116 +121,10 @@ export default function CloudSection() {
           />
         </motion.div>
 
-        {/* Optimized SVG Smoke Filters - Reduced complexity for performance */}
-        {!isMobile && (
-          <svg className="hidden">
-            <filter id="smoke-filter-1">
-              <feTurbulence
-                type="fractalNoise"
-                baseFrequency="0.008"
-                numOctaves="3"
-                seed="2"
-                result="turbulence"
-              />
-              <feDisplacementMap
-                in2="turbulence"
-                in="SourceGraphic"
-                scale="100"
-                xChannelSelector="R"
-                yChannelSelector="G"
-              />
-              <feGaussianBlur stdDeviation="12" />
-            </filter>
+        {/* Optimized SVG Smoke Filters - REMOVED for better performance */}
 
-            <filter id="smoke-filter-2">
-              <feTurbulence
-                type="fractalNoise"
-                baseFrequency="0.006"
-                numOctaves="3"
-                seed="7"
-                result="turbulence"
-              />
-              <feDisplacementMap
-                in2="turbulence"
-                in="SourceGraphic"
-                scale="120"
-                xChannelSelector="R"
-                yChannelSelector="G"
-              />
-              <feGaussianBlur stdDeviation="15" />
-            </filter>
-          </svg>
-        )}
-
-        {/* Optimized Smoke Layers - 3 puffs for better performance - DESKTOP ONLY */}
-        {!isMobile && (
-          <motion.div
-            style={{
-              scale,
-              opacity: cloudOpacity,
-              willChange: "transform, opacity",
-            }}
-            className="absolute inset-0 z-10"
-          >
-            {/* Puff 1: Large Pink Cloud (Bottom-Center) */}
-            <motion.div
-              className="absolute w-[140%] h-[140%] left-[-20%] top-[25%] bg-[#F7ADCF] pointer-events-none"
-              style={{
-                filter: "url(#smoke-filter-1)",
-                opacity: 0.7,
-                borderRadius: "50%",
-                willChange: "transform",
-              }}
-              animate={{
-                y: ["0%", "-10%"],
-              }}
-              transition={{
-                duration: 18,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            />
-
-            {/* Puff 2: White Wisp (Offset) */}
-            <motion.div
-              className="absolute w-[130%] h-[130%] left-[-30%] top-[30%] bg-white pointer-events-none"
-              style={{
-                filter: "url(#smoke-filter-2)",
-                opacity: 0.5,
-                borderRadius: "50%",
-                willChange: "transform",
-              }}
-              animate={{
-                y: ["0%", "-15%"],
-                x: ["0%", "3%"],
-              }}
-              transition={{
-                duration: 22,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            />
-
-            {/* Puff 3: Pink-White Mix (Center) */}
-            <motion.div
-              className="absolute w-[120%] h-[120%] left-[-10%] top-[20%] bg-[#F9C4D8] pointer-events-none"
-              style={{
-                filter: "url(#smoke-filter-1)",
-                opacity: 0.65,
-                borderRadius: "50%",
-                willChange: "transform",
-              }}
-              animate={{
-                y: ["0%", "-12%"],
-              }}
-              transition={{
-                duration: 20,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            />
-          </motion.div>
-        )}
+        {/* Optimized Smoke Layers - REMOVED for better performance */}
+        {/* We now rely on the simple smooth fade defined by 'bgOpacity' above */}
 
         {/* Hanging Sign Text - Header at top of section */}
         <motion.div
@@ -337,6 +227,8 @@ export default function CloudSection() {
                         alt={product.name}
                         className="w-full h-full object-cover"
                         loading="lazy"
+                        decoding="async"
+                        sizes="(max-width: 768px) 85vw, 300px" // Helping browser select right size
                       />
                     </div>
 
