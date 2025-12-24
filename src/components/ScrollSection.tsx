@@ -315,14 +315,16 @@ function SpiralCard({
       {/* 
         Video Only - Suspense allows progressive loading without full blocking
       */}
-      <Suspense fallback={null}>
-        <VideoSurface
-          videoUrl={data.video}
-          width={cardWidth - 0.1}
-          height={cardHeight * 0.75}
-          isExpanded={isExpanded}
-        />
-      </Suspense>
+      {/* 
+        Video Only - Manual Texture Management
+        No Suspense needed as we handle the video element manually
+      */}
+      <VideoSurface
+        videoUrl={data.video}
+        width={cardWidth - 0.1}
+        height={cardHeight * 0.75}
+        isExpanded={isExpanded}
+      />
 
       <mesh position={[0, 0, 0]}>
         <shapeGeometry args={[shape]} />
