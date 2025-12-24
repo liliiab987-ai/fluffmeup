@@ -85,16 +85,89 @@ const CARD_DATA = [
   {
     title: "Heart Delight",
     icon: "🌍",
-    image: "/01-Photoroom.webp", // Replaced missing item5.webp
+    image: "/01-Photoroom.webp",
     video: "/video5.mp4",
   },
   {
     title: "SPECIAL\nGIFTS ",
     icon: "⭐",
-    image: "/04-Photoroom.webp", // Replaced missing item2.webp
+    image: "/04-Photoroom.webp",
     video: "/video7.mp4",
   },
 ];
+
+// --- Sub-components for Suspense-based loading ---
+
+function VideoSurface({
+  videoUrl,
+  width,
+  height,
+  isExpanded,
+}: {
+  videoUrl: string;
+  width: number;
+  height: number;
+  isExpanded: boolean;
+}) {
+  const videoTexture = useVideoTexture(videoUrl, {
+    unsuspend: "canplay",
+    muted: !isExpanded,
+    loop: true,
+    start: true,
+    playsInline: true,
+  });
+
+  useEffect(() => {
+    videoTexture.colorSpace = THREE.SRGBColorSpace;
+    const video = videoTexture.image;
+    if (video) {
+      video.muted = !isExpanded;
+      if (isExpanded) {
+        video.volume = 0.5;
+        video.play().catch((e) => console.error("Video play failed", e));
+      }
+    }
+  }, [videoTexture, isExpanded]);
+
+  return (
+    <mesh position={[0, 0.2, 0.06]}>
+      <planeGeometry args={[width, height]} />
+      <meshBasicMaterial
+        map={videoTexture}
+        toneMapped={false}
+        color="white"
+        side={THREE.FrontSide}
+      />
+    </mesh>
+  );
+}
+
+function ImageSurface({
+  imageUrl,
+  width,
+  height,
+}: {
+  imageUrl: string;
+  width: number;
+  height: number;
+}) {
+  const texture = useTexture(imageUrl);
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  return (
+    <mesh position={[0, 0.2, 0.06]}>
+      <planeGeometry args={[width, height]} />
+      <meshBasicMaterial
+        map={texture}
+        toneMapped={false}
+        color="white"
+        side={THREE.FrontSide}
+      />
+    </mesh>
+  );
+}
+
+// -------------------------------------------------
 
 function SpiralCard({
   index,
@@ -170,46 +243,6 @@ function SpiralCard({
 
   const data = CARD_DATA[index % CARD_DATA.length];
 
-  // Conditional texture loading
-  // WE RELY ON KEY-REMOUNTING PARENT so hook rules are preserved
-  let texture;
-  if (isMobile) {
-    // Mobile: Load Static Image
-    texture = useTexture(data.image);
-    texture.colorSpace = THREE.SRGBColorSpace;
-  } else {
-    // Desktop: Load Video
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    texture = useVideoTexture(data.video, {
-      unsuspend: "canplay",
-      muted: !isExpanded,
-      loop: true,
-      start: true,
-      playsInline: true,
-    });
-    texture.colorSpace = THREE.SRGBColorSpace;
-  }
-
-  const cardTexture = useTexture("/card-texture.png");
-
-  useEffect(() => {
-    if (!isMobile) {
-      const video = texture.image;
-      if (video && video instanceof HTMLVideoElement) {
-        video.muted = !isExpanded;
-        if (isExpanded) {
-          video.volume = 0.5;
-          video.play().catch((e) => console.error(e));
-        }
-      }
-    }
-
-    if (cardTexture) {
-      cardTexture.wrapS = cardTexture.wrapT = THREE.RepeatWrapping;
-      cardTexture.repeat.set(1, 1);
-    }
-  }, [texture, cardTexture, isExpanded, isMobile]);
-
   const shape = new THREE.Shape();
   const cardWidth = 1.3;
   const cardHeight = 2.3;
@@ -276,15 +309,27 @@ function SpiralCard({
         )}
       </mesh>
 
-      <mesh position={[0, 0.2, 0.06]}>
-        <planeGeometry args={[cardWidth - 0.1, cardHeight * 0.75]} />
-        <meshBasicMaterial
-          map={texture}
-          toneMapped={false}
-          color="white"
-          side={THREE.FrontSide}
+      {/* 
+        Safe Video Fallback Logic:
+        1. Try to render VideoSurface (async loading)
+        2. While loading or if blocked, fallback to ImageSurface (instant)
+      */}
+      <Suspense
+        fallback={
+          <ImageSurface
+            imageUrl={data.image}
+            width={cardWidth - 0.1}
+            height={cardHeight * 0.75}
+          />
+        }
+      >
+        <VideoSurface
+          videoUrl={data.video}
+          width={cardWidth - 0.1}
+          height={cardHeight * 0.75}
+          isExpanded={isExpanded}
         />
-      </mesh>
+      </Suspense>
 
       <mesh position={[0, 0, 0]}>
         <shapeGeometry args={[shape]} />
