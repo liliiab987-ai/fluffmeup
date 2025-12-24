@@ -274,20 +274,28 @@ function SpiralCard({
       {/* Glass Card Body - Front Layer */}
       <mesh position={[0, 0, 0.05]}>
         <extrudeGeometry args={[shape, extrudeSettings]} />
-        {/* Premium Glass Material */}
-        <meshPhysicalMaterial
-          color="#ffffff"
-          transmission={0.98} // Increased for clearer glass
-          opacity={1}
-          metalness={0.1}
-          roughness={0.07} // Smoother for "real glass" feel
-          clearcoat={1}
-          clearcoatRoughness={0.02}
-          ior={1.5}
-          thickness={0.3} // Increased thickness for more volume/refraction
-          envMapIntensity={2} // Stronger reflections
-          transparent={true}
-        />
+        {/* Simplified material for mobile, premium glass for desktop */}
+        {isMobile ? (
+          <meshBasicMaterial
+            color="#ffffff"
+            transparent
+            opacity={0.3}
+          />
+        ) : (
+          <meshPhysicalMaterial
+            color="#ffffff"
+            transmission={0.98}
+            opacity={1}
+            metalness={0.1}
+            roughness={0.07}
+            clearcoat={1}
+            clearcoatRoughness={0.02}
+            ior={1.5}
+            thickness={0.3}
+            envMapIntensity={2}
+            transparent={true}
+          />
+        )}
       </mesh>
 
       {/* Video Display - Embedded "Inside" the Glass */}
@@ -335,7 +343,9 @@ function SpiralCard({
 }
 
 function Particles({ scrollProgress }: { scrollProgress: number }) {
-  const count = 500;
+  const { viewport } = useThree();
+  const isMobile = viewport.width < 5;
+  const count = isMobile ? 50 : 500; // Drastically reduce on mobile
   const mesh = useRef<THREE.Points>(null);
 
   // Generate circular texture
@@ -467,92 +477,12 @@ function Scene({ scrollProgress }: { scrollProgress: number }) {
   );
 }
 
-// Mobile 2D Carousel Fallback
-function MobileScrollSection({ scrollProgress }: { scrollProgress: number }) {
-  const currentIndex = Math.floor(scrollProgress * (CARD_DATA.length - 1));
-
-  return (
-    <div className="relative w-full h-full">
-      {/* Background */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: "url(/imgbackground.webp)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
-
-      {/* Card Carousel */}
-      <div className="relative z-10 flex items-center justify-center h-full px-4">
-        <div className="w-full max-w-sm">
-          {CARD_DATA.map((card, index) => (
-            <motion.div
-              key={index}
-              className="absolute inset-0 flex items-center justify-center"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{
-                opacity: currentIndex === index ? 1 : 0,
-                scale: currentIndex === index ? 1 : 0.8,
-                zIndex: currentIndex === index ? 10 : 0,
-              }}
-              transition={{ duration: 0.3, type: "tween" }}
-            >
-              <div
-                className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(247, 173, 207, 0.2) 100%)",
-                  backdropFilter: "blur(10px)",
-                  border: "2px solid rgba(255, 255, 255, 0.5)",
-                }}
-              >
-                <video
-                  src={card.video}
-                  className="absolute inset-0 w-full h-[75%] object-cover"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                />
-                <div className="absolute bottom-0 w-full p-4 bg-white/95 text-center">
-                  <h3
-                    className="font-bold text-xl mb-2"
-                    style={{
-                      fontFamily: "Comfortaa, sans-serif",
-                      color: "#F7ADCF",
-                    }}
-                  >
-                    {card.title.replace(/\n/g, " ")}
-                  </h3>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white text-opacity-80 pointer-events-none animate-bounce font-bold tracking-widest text-sm">
-        SCROLL TO EXPLORE
-      </div>
-    </div>
-  );
-}
+// Mobile 2D Carousel Fallback - REMOVED, using optimized 3D instead
 
 export default function ScrollSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0.5, y: 0.5 });
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   useEffect(() => {
     let ticking = false;

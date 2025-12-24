@@ -13,9 +13,14 @@ export default function VideoHeader({ isNavHovered }: VideoHeaderProps) {
     const video = videoRef.current;
     if (!video) return;
 
+    let hasPlayed = false;
+
     // Attempt initial play
     const attemptPlay = () => {
-      video.play().catch((e) => {
+      if (hasPlayed) return;
+      video.play().then(() => {
+        hasPlayed = true;
+      }).catch((e) => {
         console.log("Autoplay prevented:", e);
       });
     };
@@ -34,18 +39,23 @@ export default function VideoHeader({ isNavHovered }: VideoHeaderProps) {
 
     observer.observe(video);
 
-    // Touch handler as fallback
-    const handleTouch = () => {
+    // Multiple fallback triggers
+    const handleInteraction = () => {
       attemptPlay();
-      document.removeEventListener("touchstart", handleTouch);
     };
 
-    document.addEventListener("touchstart", handleTouch);
+    // Try on any user interaction
+    document.addEventListener("touchstart", handleInteraction, { once: true });
+    document.addEventListener("click", handleInteraction, { once: true });
+    document.addEventListener("scroll", handleInteraction, { once: true });
+
     attemptPlay(); // Try immediately
 
     return () => {
       observer.disconnect();
-      document.removeEventListener("touchstart", handleTouch);
+      document.removeEventListener("touchstart", handleInteraction);
+      document.removeEventListener("click", handleInteraction);
+      document.removeEventListener("scroll", handleInteraction);
     };
   }, []);
   return (
