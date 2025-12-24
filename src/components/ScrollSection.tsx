@@ -466,10 +466,92 @@ function Scene({ scrollProgress }: { scrollProgress: number }) {
   );
 }
 
+// Mobile 2D Carousel Fallback
+function MobileScrollSection({ scrollProgress }: { scrollProgress: number }) {
+  const currentIndex = Math.floor(scrollProgress * (CARD_DATA.length - 1));
+
+  return (
+    <div className="relative w-full h-full">
+      {/* Background */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: "url(/imgbackground.webp)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+
+      {/* Card Carousel */}
+      <div className="relative z-10 flex items-center justify-center h-full px-4">
+        <div className="w-full max-w-sm">
+          {CARD_DATA.map((card, index) => (
+            <motion.div
+              key={index}
+              className="absolute inset-0 flex items-center justify-center"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{
+                opacity: currentIndex === index ? 1 : 0,
+                scale: currentIndex === index ? 1 : 0.8,
+                zIndex: currentIndex === index ? 10 : 0,
+              }}
+              transition={{ duration: 0.3, type: "tween" }}
+            >
+              <div
+                className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(247, 173, 207, 0.2) 100%)",
+                  backdropFilter: "blur(10px)",
+                  border: "2px solid rgba(255, 255, 255, 0.5)",
+                }}
+              >
+                <video
+                  src={card.video}
+                  className="absolute inset-0 w-full h-[75%] object-cover"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
+                <div className="absolute bottom-0 w-full p-4 bg-white/95 text-center">
+                  <h3
+                    className="font-bold text-xl mb-2"
+                    style={{
+                      fontFamily: "Comfortaa, sans-serif",
+                      color: "#F7ADCF",
+                    }}
+                  >
+                    {card.title.replace(/\n/g, " ")}
+                  </h3>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white text-opacity-80 pointer-events-none animate-bounce font-bold tracking-widest text-sm">
+        SCROLL TO EXPLORE
+      </div>
+    </div>
+  );
+}
+
 export default function ScrollSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0.5, y: 0.5 });
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     let ticking = false;
@@ -519,40 +601,47 @@ export default function ScrollSection() {
   return (
     <div ref={containerRef} className="relative w-full h-[600vh] z-30">
       <div className="sticky top-0 left-0 w-full h-[100dvh] overflow-hidden">
-        {/* Background Layer */}
-        <div
-          className="absolute inset-0 z-0 transition-transform duration-300 ease-out"
-          style={{
-            backgroundImage: "url(/imgbackground.webp)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            transform: `scale(1.05) translate(${(mousePosition.x - 0.5) * 20
-              }px, ${(mousePosition.y - 0.5) * 20}px)`,
-            opacity: 1,
-          }}
-        />
+        {isMobile ? (
+          <MobileScrollSection scrollProgress={scrollProgress} />
+        ) : (
+          <>
+            {/* Background Layer */}
+            <div
+              className="absolute inset-0 z-0 transition-transform duration-300 ease-out"
+              style={{
+                backgroundImage: "url(/imgbackground.webp)",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                transform: `scale(1.05) translate(${(mousePosition.x - 0.5) * 20
+                  }px, ${(mousePosition.y - 0.5) * 20}px)`,
+                opacity: 1,
+              }}
+            />
 
-        {/* 3D Scene Layer */}
-        <div className="relative z-10 w-full h-full">
-          {/* Shadows disabled for performance */}
-          <Canvas
-            camera={{ position: [0, 0, 8], fov: 45 }}
-            dpr={[1, 1.2]}
-            style={{ touchAction: "pan-y" }} // Allow vertical scrolling on mobile
-            gl={{ preserveDrawingBuffer: true, powerPreference: "high-performance" }} // Improve mobile compatibility
-          >
-            <Suspense fallback={null}>
-              <Scene scrollProgress={scrollProgress} />
-            </Suspense>
-          </Canvas>
+            {/* 3D Scene Layer */}
+            <div className="relative z-10 w-full h-full">
+              {/* Shadows disabled for performance */}
+              <Canvas
+                camera={{ position: [0, 0, 8], fov: 45 }}
+                dpr={[1, 1.2]}
+                style={{ touchAction: "pan-y" }}
+                gl={{
+                  preserveDrawingBuffer: true,
+                  powerPreference: "high-performance",
+                }}
+              >
+                <Suspense fallback={null}>
+                  <Scene scrollProgress={scrollProgress} />
+                </Suspense>
+              </Canvas>
 
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white text-opacity-80 pointer-events-none animate-bounce font-bold tracking-widest">
-            SCROLL TO EXPLORE
-          </div>
-        </div>
+              <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white text-opacity-80 pointer-events-none animate-bounce font-bold tracking-widest">
+                SCROLL TO EXPLORE
+              </div>
+            </div>
+          </>
+        )}
       </div>
-
-      {/* SVG Filter removed for performance */}
     </div>
   );
 }

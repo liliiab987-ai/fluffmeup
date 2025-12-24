@@ -84,9 +84,8 @@ export default function MacaronSection() {
             className="hidden md:block absolute left-0 z-10 whitespace-nowrap pl-72 pt-8 text-left"
             transition={{
               scale: {
-                type: "spring",
-                stiffness: 300,
-                damping: 15,
+                type: "tween",
+                duration: 0.3,
               },
             }}
           >
