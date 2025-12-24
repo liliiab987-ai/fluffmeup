@@ -33,16 +33,12 @@ function ImageSequenceCup({ scrollProgress }: { scrollProgress: number }) {
     });
   }, [textures]);
 
-  // Calculate current frame based on scroll progress
-  // Map 0-1 scroll progress to 0-(totalFrames-1)
-  // We cycle through the images multiple times for a spinning effect
   const totalFrames = textures.length;
-  const cycles = 4; // Number of full rotations
+  const cycles = 4;
   const frameIndex =
     Math.floor(scrollProgress * totalFrames * cycles) % totalFrames;
   const currentTexture = textures[frameIndex];
 
-  // Calculate aspect ratio for the current frame
   const img = currentTexture.image as HTMLImageElement;
   const aspect = img ? img.width / img.height : 1;
   const scaleX = 3.5 * aspect;
@@ -63,25 +59,25 @@ function ImageSequenceCup({ scrollProgress }: { scrollProgress: number }) {
 
 const CARD_DATA = [
   {
-    title: "CHOCOLATE\nSTRAWBERRIES",
+    title: "CHOCOLATE\\nSTRAWBERRIES",
     icon: "☕",
     image: "/01-Photoroom.webp",
     video: "/video1.mp4",
   },
   {
-    title: "SWEET \nTREATS",
+    title: "SWEET \\nTREATS",
     icon: "🌡️",
     image: "/0.2-Photoroom.webp",
     video: "/video2.mp4",
   },
   {
-    title: "FLAVOR\nNOTES",
+    title: "FLAVOR\\nNOTES",
     icon: "🍒",
     image: "/03-Photoroom.webp",
     video: "/video3.mp4",
   },
   {
-    title: "PASTRY\nDESSERTS",
+    title: "PASTRY\\nDESSERTS",
     icon: "💧",
     image: "/04-Photoroom.webp",
     video: "/video4.mp4",
@@ -93,7 +89,7 @@ const CARD_DATA = [
     video: "/video5.mp4",
   },
   {
-    title: "SPECIAL\nGIFTS ",
+    title: "SPECIAL\\nGIFTS ",
     icon: "⭐",
     image: "/item2.webp",
     video: "/video7.mp4",
@@ -121,19 +117,15 @@ function SpiralCard({
   const isExpanded = expandedIndex === index;
   const isAnyExpanded = expandedIndex !== null;
 
-  // Distribute cards around the circle
   const angleStep = (Math.PI * 2) / total;
   const initialAngle = index * angleStep;
-
-  // No vertical offset - all cards at same height for seamless loop
   const yOffset = 0;
 
   const { viewport } = useThree();
-  const isMobile = viewport.width < 5; // Approximate threshold for mobile
+  const isMobile = viewport.width < 5;
 
   useFrame((state, delta) => {
     if (ref.current) {
-      // 1. Calculate Spiral Position (Default)
       const r = scrollProgress;
       const rotationSpeed = Math.PI * 2;
       const currentAngle = initialAngle + r * rotationSpeed;
@@ -142,50 +134,36 @@ function SpiralCard({
       const spiralZ = Math.sin(currentAngle) * radius;
       const spiralY = yOffset + Math.sin(r * Math.PI * 4 + index) * 0.5;
 
-      // 2. Determine Target State based on expansion
       const targetPos = new THREE.Vector3(spiralX, spiralY, spiralZ);
       const targetScale = new THREE.Vector3(1, 1, 1);
 
-      // Base scale adjustment for mobile
       const baseScale = isMobile ? 0.7 : 1;
       targetScale.set(baseScale, baseScale, baseScale);
 
       if (isExpanded) {
-        // Expanded State: Center of screen, closer to camera
-        targetPos.set(0, 0, 4); // z=4 is closer to camera (at z=8)
-
-        // Mobile: 0.65, Desktop: 1.5
+        targetPos.set(0, 0, 4);
         const expandedScale = isMobile ? 0.65 : 1.5;
         targetScale.set(expandedScale, expandedScale, expandedScale);
       } else if (isAnyExpanded) {
-        // If another card is expanded, push this one back and make it smaller
-        targetPos.set(spiralX * 1.5, spiralY, spiralZ * 1.5); // Push further back
-
-        // Mobile: 0.4, Desktop: 0.7
+        targetPos.set(spiralX * 1.5, spiralY, spiralZ * 1.5);
         const bgScale = isMobile ? 0.4 : 0.7;
         targetScale.set(bgScale, bgScale, bgScale);
       }
 
-      // 3. Apply Smooth Animation (Lerp)
       const lerpSpeed = delta * 4;
-
       ref.current.position.lerp(targetPos, lerpSpeed);
       ref.current.scale.lerp(targetScale, lerpSpeed);
 
-      // Rotation Logic
       if (isExpanded) {
-        // Face the camera perfectly
         const targetRot = new THREE.Quaternion().setFromEuler(
           new THREE.Euler(0, 0, 0)
         );
         ref.current.quaternion.slerp(targetRot, lerpSpeed);
       } else {
-        // Spiral LookAt Logic
         const dummy = new THREE.Object3D();
         dummy.position.copy(ref.current.position);
         dummy.lookAt(0, dummy.position.y, 0);
-        dummy.rotation.y += Math.PI; // Flip outward
-
+        dummy.rotation.y += Math.PI;
         ref.current.quaternion.slerp(dummy.quaternion, lerpSpeed);
       }
     }
@@ -193,23 +171,20 @@ function SpiralCard({
 
   const data = CARD_DATA[index % CARD_DATA.length];
 
-  // Load video texture with autoplay settings
   const videoTexture = useVideoTexture(data.video, {
     unsuspend: "canplay",
-    muted: !isExpanded, // Unmute when expanded?
+    muted: !isExpanded,
     loop: true,
     start: true,
     playsInline: true,
   });
 
-  // Load card texture for subtle watermark effect
   const cardTexture = useTexture("/card-texture.png");
 
   useEffect(() => {
     videoTexture.colorSpace = THREE.SRGBColorSpace;
     const video = videoTexture.image;
     if (video) {
-      // Manage volume/mute based on expansion
       video.muted = !isExpanded;
       if (isExpanded) {
         video.volume = 0.5;
@@ -217,18 +192,15 @@ function SpiralCard({
       }
     }
 
-    // Configure card texture
     if (cardTexture) {
       cardTexture.wrapS = cardTexture.wrapT = THREE.RepeatWrapping;
       cardTexture.repeat.set(1, 1);
     }
   }, [videoTexture, cardTexture, isExpanded]);
 
-  // Create rounded rectangle shape
-  // Adjusted for 9:16 Aspect Ratio (Vertical Video)
   const shape = new THREE.Shape();
   const cardWidth = 1.3;
-  const cardHeight = 2.3; // Approx 9:16 ratio
+  const cardHeight = 2.3;
   const cardRadius = 0.2;
   const x = -cardWidth / 2;
   const y = -cardHeight / 2;
@@ -249,11 +221,11 @@ function SpiralCard({
   shape.quadraticCurveTo(x, y, x, y + cardRadius);
 
   const extrudeSettings = {
-    depth: 0.1, // Thicker glass
-    bevelEnabled: true, // Re-enabled for "compact" look
+    depth: 0.1,
+    bevelEnabled: true,
     bevelThickness: 0.03,
     bevelSize: 0.02,
-    bevelSegments: 3, // Low segment count for performance
+    bevelSegments: 3,
     steps: 1,
   };
 
@@ -271,10 +243,8 @@ function SpiralCard({
         document.body.style.cursor = "auto";
       }}
     >
-      {/* Glass Card Body - Front Layer */}
       <mesh position={[0, 0, 0.05]}>
         <extrudeGeometry args={[shape, extrudeSettings]} />
-        {/* Simplified material for mobile, premium glass for desktop */}
         {isMobile ? (
           <meshBasicMaterial
             color="#ffffff"
@@ -298,11 +268,6 @@ function SpiralCard({
         )}
       </mesh>
 
-      {/* Video Display - Embedded "Inside" the Glass */}
-      {/* Positioned slightly behind the front glass face */}
-      {/* Video Display - Embedded "Inside" the Glass */}
-      {/* Positioned slightly behind the front glass face */}
-      {/* Resized to leave space at the bottom for text */}
       <mesh position={[0, 0.2, 0.06]}>
         <planeGeometry args={[cardWidth - 0.1, cardHeight * 0.75]} />
         <meshBasicMaterial
@@ -313,27 +278,25 @@ function SpiralCard({
         />
       </mesh>
 
-      {/* Backing Plate - To prevent see-through to other side */}
       <mesh position={[0, 0, 0]}>
         <shapeGeometry args={[shape]} />
         <meshBasicMaterial color="#F7ADCF" />
       </mesh>
 
-      {/* Content - Text inside the card */}
       <group position={[0, -cardHeight / 2 + 0.25, 0.2]}>
         <Text
           position={[0, 0, 0]}
-          fontSize={0.1} // Slightly larger font since we have more dedicated space
-          font="/fonts/Comfortaa-Bold.ttf" // Local Comfortaa Font
+          fontSize={0.1}
+          font="/fonts/Comfortaa-Bold.ttf"
           color="white"
           anchorX="center"
           anchorY="middle"
           textAlign="center"
           lineHeight={1.2}
           letterSpacing={0.05}
-          renderOrder={10} // Ensure it renders on top
+          renderOrder={10}
           outlineWidth={0.005}
-          outlineColor="rgba(255, 255, 255, 0.4)" // Stronger outline for visibility
+          outlineColor="rgba(255, 255, 255, 0.4)"
         >
           {data.title.toUpperCase()}
         </Text>
@@ -345,10 +308,9 @@ function SpiralCard({
 function Particles({ scrollProgress }: { scrollProgress: number }) {
   const { viewport } = useThree();
   const isMobile = viewport.width < 5;
-  const count = isMobile ? 50 : 500; // Drastically reduce on mobile
+  const count = isMobile ? 50 : 500;
   const mesh = useRef<THREE.Points>(null);
 
-  // Generate circular texture
   const texture = useMemo(() => {
     const canvas = document.createElement("canvas");
     canvas.width = 32;
@@ -365,23 +327,20 @@ function Particles({ scrollProgress }: { scrollProgress: number }) {
     return tex;
   }, []);
 
-  // Generate random positions and colors
   const [attributes] = useState(() => {
     const pos = new Float32Array(count * 3);
     const cols = new Float32Array(count * 3);
     const colorPalette = [
-      new THREE.Color("#F5B339"), // Gold
-      new THREE.Color("#F7ADCF"), // Light Pink
-      new THREE.Color("#F395C2"), // Darker Pink
+      new THREE.Color("#F5B339"),
+      new THREE.Color("#F7ADCF"),
+      new THREE.Color("#F395C2"),
     ];
 
     for (let i = 0; i < count; i++) {
-      // Positions
       pos[i * 3] = (Math.random() - 0.5) * 20;
       pos[i * 3 + 1] = (Math.random() - 0.5) * 20;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 10;
 
-      // Colors
       const color =
         colorPalette[Math.floor(Math.random() * colorPalette.length)];
       cols[i * 3] = color.r;
@@ -413,14 +372,14 @@ function Particles({ scrollProgress }: { scrollProgress: number }) {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.15} // Slightly larger to see the circle shape
+        size={0.15}
         map={texture}
         vertexColors
         transparent
         opacity={0.8}
         sizeAttenuation={true}
         depthWrite={false}
-        alphaTest={0.5} // Helps with transparency sorting
+        alphaTest={0.5}
       />
     </points>
   );
@@ -430,7 +389,6 @@ function Scene({ scrollProgress }: { scrollProgress: number }) {
   const cards = Array.from({ length: 6 }, (_, i) => i);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
-  // Close expanded card when clicking background
   const handleBackgroundClick = () => {
     setExpandedIndex(null);
   };
@@ -446,10 +404,8 @@ function Scene({ scrollProgress }: { scrollProgress: number }) {
         angle={0.5}
         penumbra={1}
         intensity={2}
-      // castShadow removed for performance
       />
 
-      {/* Invisible plane to catch background clicks */}
       <mesh
         position={[0, 0, -5]}
         scale={[100, 100, 1]}
@@ -460,7 +416,6 @@ function Scene({ scrollProgress }: { scrollProgress: number }) {
       </mesh>
 
       <ImageSequenceCup scrollProgress={scrollProgress} />
-
       <Particles scrollProgress={scrollProgress} />
 
       {cards.map((i) => (
@@ -476,8 +431,6 @@ function Scene({ scrollProgress }: { scrollProgress: number }) {
     </>
   );
 }
-
-// Mobile 2D Carousel Fallback - REMOVED, using optimized 3D instead
 
 export default function ScrollSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -532,46 +485,38 @@ export default function ScrollSection() {
   return (
     <div ref={containerRef} className="relative w-full h-[600vh] z-30">
       <div className="sticky top-0 left-0 w-full h-[100dvh] overflow-hidden">
-        {isMobile ? (
-          <MobileScrollSection scrollProgress={scrollProgress} />
-        ) : (
-          <>
-            {/* Background Layer */}
-            <div
-              className="absolute inset-0 z-0 transition-transform duration-300 ease-out"
-              style={{
-                backgroundImage: "url(/imgbackground.webp)",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                transform: `scale(1.05) translate(${(mousePosition.x - 0.5) * 20
-                  }px, ${(mousePosition.y - 0.5) * 20}px)`,
-                opacity: 1,
-              }}
-            />
+        <div
+          className="absolute inset-0 z-0 transition-transform duration-300 ease-out"
+          style={{
+            backgroundImage: "url(/imgbackground.webp)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            transform: `scale(1.05) translate(${(mousePosition.x - 0.5) * 20
+              }px, ${(mousePosition.y - 0.5) * 20}px)`,
+            opacity: 1,
+          }}
+        />
 
-            {/* 3D Scene Layer */}
-            <div className="relative z-10 w-full h-full">
-              {/* Shadows disabled for performance */}
-              <Canvas
-                camera={{ position: [0, 0, 8], fov: 45 }}
-                dpr={[1, 1.2]}
-                style={{ touchAction: "pan-y" }}
-                gl={{
-                  preserveDrawingBuffer: true,
-                  powerPreference: "high-performance",
-                }}
-              >
-                <Suspense fallback={null}>
-                  <Scene scrollProgress={scrollProgress} />
-                </Suspense>
-              </Canvas>
+        <div className="relative z-10 w-full h-full">
+          <Canvas
+            camera={{ position: [0, 0, 8], fov: 45 }}
+            dpr={[1, 1]}
+            style={{ touchAction: "pan-y" }}
+            gl={{
+              preserveDrawingBuffer: true,
+              powerPreference: "high-performance",
+              antialias: false,
+            }}
+          >
+            <Suspense fallback={null}>
+              <Scene scrollProgress={scrollProgress} />
+            </Suspense>
+          </Canvas>
 
-              <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white text-opacity-80 pointer-events-none animate-bounce font-bold tracking-widest">
-                SCROLL TO EXPLORE
-              </div>
-            </div>
-          </>
-        )}
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white text-opacity-80 pointer-events-none animate-bounce font-bold tracking-widest">
+            SCROLL TO EXPLORE
+          </div>
+        </div>
       </div>
     </div>
   );
