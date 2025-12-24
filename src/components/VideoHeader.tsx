@@ -10,11 +10,43 @@ export default function VideoHeader({ isNavHovered }: VideoHeaderProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch((e) => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Attempt initial play
+    const attemptPlay = () => {
+      video.play().catch((e) => {
         console.log("Autoplay prevented:", e);
       });
-    }
+    };
+
+    // Intersection Observer for lazy autoplay
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            attemptPlay();
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(video);
+
+    // Touch handler as fallback
+    const handleTouch = () => {
+      attemptPlay();
+      document.removeEventListener("touchstart", handleTouch);
+    };
+
+    document.addEventListener("touchstart", handleTouch);
+    attemptPlay(); // Try immediately
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("touchstart", handleTouch);
+    };
   }, []);
   return (
     <div className="absolute top-0 left-0 w-full h-screen z-0 overflow-hidden pointer-events-none">

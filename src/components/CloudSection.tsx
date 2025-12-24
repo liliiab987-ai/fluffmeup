@@ -90,8 +90,12 @@ export default function CloudSection() {
   // Opacity: Clouds fade out early, before sign appears
   const cloudOpacity = useTransform(scrollYProgress, [0.5, 0.7], [1, 0]);
 
-  // Background Image Opacity: Reveals as clouds clear
-  const bgOpacity = useTransform(scrollYProgress, [0.7, 1], [0, 1]);
+  // Background Image Opacity: Reveals as clouds clear (mobile: always visible)
+  const bgOpacity = useTransform(
+    scrollYProgress,
+    [0.7, 1],
+    [isMobile ? 1 : 0, 1]
+  );
 
   // Solid Pink Background Opacity: Fades in quickly to hide the previous section and prevent gaps
   const solidBgOpacity = useTransform(scrollYProgress, [0, 0.1], [0, 1]);
@@ -279,7 +283,7 @@ export default function CloudSection() {
           </motion.div>
         </motion.div>
 
-        {/* Product Carweweds - Positioned bedlow the sign */}
+        {/* Product Cards - Positioned below the sign */}
         <motion.div
           style={{ opacity: bgOpacity }}
           className="absolute top-[35%] md:top-[42%] left-0 md:left-9 right-0 z-20 px-4 md:px-8 pointer-events-auto"
@@ -392,6 +396,10 @@ export default function CloudSection() {
                   fontSize: "1.1rem",
                   marginTop: "28px",
                   padding: "14px",
+                }}
+                onClick={() => {
+                  // TODO: Replace with actual store URL
+                  window.open("https://your-store-url.com", "_blank");
                 }}
                 whileHover={{
                   scale: 1.1,
