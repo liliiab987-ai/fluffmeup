@@ -4,8 +4,8 @@ export const siteConfig = {
   name: "Fluff Me Up",
   description:
     "Premier café in Toronto. Indulge in our cloud-like desserts, custom cakes, and gourmet treats at 802 Danforth Ave.",
-  url: "https://fluffmeup.ca", // Assuming .ca for Toronto business, or .com if global. adjusting to likely domain or placeholder
-  ogImage: "https://fluffmeup.ca/og-image.jpg",
+  url: "https://fluffmeup.com", // Assuming .ca for Toronto business, or .com if global. adjusting to likely domain or placeholder
+  ogImage: "https://fluffmeup.com/og-image.jpg",
   links: {
     twitter: "https://twitter.com/fluffmeup",
     github: "https://github.com/fluffmeup",
@@ -59,7 +59,7 @@ export const defaultMetadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_CA",
-    url: "https://fluffmeup.ca",
+    url: "https://fluffmeup.com",
     title: "Fluff Me Up | Toronto’s Coziest Café",
     description:
       "Visit Fluff Me Up at 802 Danforth Ave for Toronto’s Coziest Café and authentic French macarons. Sweet treats for every occasion.",
