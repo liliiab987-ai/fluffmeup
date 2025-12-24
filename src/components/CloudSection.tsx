@@ -289,7 +289,7 @@ export default function CloudSection() {
           className="absolute top-[35%] md:top-[42%] left-0 md:left-9 right-0 z-20 px-4 md:px-8 pointer-events-auto"
         >
           <div className="max-w-8xl mx-auto">
-            <div className="flex gap-8 overflow-x-auto pb-8 snap-x snap-mandatory scroll-smooth scrollbar-hide">
+            <div className="flex gap-8 overflow-x-auto pb-8 snap-x snap-mandatory scroll-smooth scrollbar-hide pl-[calc((100vw-85vw)/2)] md:pl-0">
               {products.map((product, index) => (
                 <motion.div
                   key={product.id}

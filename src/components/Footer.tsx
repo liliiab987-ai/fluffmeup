@@ -41,7 +41,7 @@ export default function Footer() {
           >
             <h4>Contact</h4>
             <p>hello@fluffmeup.com</p>
-            <p>+1</p>
+            <p>4651188</p>
             <div className="social-links">
               <a
                 href="https://www.instagram.com/fluffme_up/"
