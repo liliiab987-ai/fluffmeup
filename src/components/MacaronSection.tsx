@@ -143,7 +143,7 @@ export default function MacaronSection() {
           {/* This component creates a rotating light effect on the border */}
           {/* It uses a mask to only show the gradient on the border area */}
           <motion.div
-            className="absolute bottom-0 left-4 right-4 md:absolute md:left-auto md:right-[-17%] md:top-[55%] z-30 w-auto max-w-none md:max-w-[55%] p-6 md:p-8 rounded-t-3xl md:rounded-3xl shadow-2xl backdrop-blur-xl border border-white/50 overflow-hidden md:mt-0"
+            className="absolute bottom-0 left-4 right-4 md:absolute md:left-auto md:right-[-17%] md:top-[50%] z-30 w-auto max-w-none md:max-w-[55%] p-6 md:p-8 rounded-t-3xl md:rounded-3xl shadow-2xl backdrop-blur-xl border border-white/50 overflow-hidden md:mt-0"
             style={{
               background:
                 "linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(247, 173, 207, 0.2) 100%)",
