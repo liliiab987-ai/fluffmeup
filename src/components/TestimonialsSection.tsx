@@ -152,18 +152,17 @@ export default function TestimonialsSection() {
   // Parallax effects
   const yBg = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]);
 
-  // Unveil effect: Circle expands from 0% to 150% as we scroll into view
-  const clipPath = useTransform(
-    scrollYProgress,
-    [0, 0.8], // Triggers as soon as section starts entering
-    ["circle(0% at 50% 50%)", "circle(150% at 50% 50%)"]
-  );
+  // Optimized Unveil Effect: Scale and Opacity instead of heavy Clip-Path
+  // This uses GPU compositing efficiently
+  const scale = useTransform(scrollYProgress, [0, 0.2], [0.8, 1]);
+  const opacity = useTransform(scrollYProgress, [0, 0.15], [0, 1]);
+  const borderRadius = useTransform(scrollYProgress, [0, 0.2], ["50px", "0px"]);
 
   return (
     <motion.section
       ref={containerRef}
-      style={{ clipPath }}
-      className="relative w-full min-h-screen md:h-[115vh] overflow-hidden flex flex-col items-center justify-start pt-24 md:pt-32" // Added flex-col and padding-top for layout
+      style={{ scale, opacity, borderRadius }}
+      className="relative w-full min-h-screen md:h-[115vh] overflow-hidden flex flex-col items-center justify-start pt-24 md:pt-32 will-change-transform" // Added flex-col and padding-top for layout
     >
       {/* Background Image with Parallax - NO DARK OVERLAY */}
       <motion.div style={{ y: yBg }} className="absolute inset-0 z-0 h-[120%]">
