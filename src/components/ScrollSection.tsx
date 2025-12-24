@@ -59,25 +59,25 @@ function ImageSequenceCup({ scrollProgress }: { scrollProgress: number }) {
 
 const CARD_DATA = [
   {
-    title: "CHOCOLATE\\nSTRAWBERRIES",
+    title: "CHOCOLATE\nSTRAWBERRIES",
     icon: "☕",
     image: "/01-Photoroom.webp",
     video: "/video1.mp4",
   },
   {
-    title: "SWEET \\nTREATS",
+    title: "SWEET \nTREATS",
     icon: "🌡️",
     image: "/0.2-Photoroom.webp",
     video: "/video2.mp4",
   },
   {
-    title: "FLAVOR\\nNOTES",
+    title: "FLAVOR\nNOTES",
     icon: "🍒",
     image: "/03-Photoroom.webp",
     video: "/video3.mp4",
   },
   {
-    title: "PASTRY\\nDESSERTS",
+    title: "PASTRY\nDESSERTS",
     icon: "💧",
     image: "/04-Photoroom.webp",
     video: "/video4.mp4",
@@ -89,7 +89,7 @@ const CARD_DATA = [
     video: "/video5.mp4",
   },
   {
-    title: "SPECIAL\\nGIFTS ",
+    title: "SPECIAL\nGIFTS ",
     icon: "⭐",
     image: "/item2.webp",
     video: "/video7.mp4",
@@ -104,6 +104,7 @@ function SpiralCard({
   setExpandedIndex,
   radius = 3.5,
   height = 8,
+  isMobile,
 }: {
   index: number;
   total: number;
@@ -112,6 +113,7 @@ function SpiralCard({
   setExpandedIndex: (index: number | null) => void;
   radius?: number;
   height?: number;
+  isMobile: boolean;
 }) {
   const ref = useRef<THREE.Group>(null);
   const isExpanded = expandedIndex === index;
@@ -120,9 +122,6 @@ function SpiralCard({
   const angleStep = (Math.PI * 2) / total;
   const initialAngle = index * angleStep;
   const yOffset = 0;
-
-  const { viewport } = useThree();
-  const isMobile = viewport.width < 5;
 
   useFrame((state, delta) => {
     if (ref.current) {
@@ -171,24 +170,37 @@ function SpiralCard({
 
   const data = CARD_DATA[index % CARD_DATA.length];
 
-  const videoTexture = useVideoTexture(data.video, {
-    unsuspend: "canplay",
-    muted: !isExpanded,
-    loop: true,
-    start: true,
-    playsInline: true,
-  });
+  // Conditional texture loading
+  // WE RELY ON KEY-REMOUNTING PARENT so hook rules are preserved
+  let texture;
+  if (isMobile) {
+    // Mobile: Load Static Image
+    texture = useTexture(data.image);
+    texture.colorSpace = THREE.SRGBColorSpace;
+  } else {
+    // Desktop: Load Video
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    texture = useVideoTexture(data.video, {
+      unsuspend: "canplay",
+      muted: !isExpanded,
+      loop: true,
+      start: true,
+      playsInline: true,
+    });
+    texture.colorSpace = THREE.SRGBColorSpace;
+  }
 
   const cardTexture = useTexture("/card-texture.png");
 
   useEffect(() => {
-    videoTexture.colorSpace = THREE.SRGBColorSpace;
-    const video = videoTexture.image;
-    if (video) {
-      video.muted = !isExpanded;
-      if (isExpanded) {
-        video.volume = 0.5;
-        video.play().catch((e) => console.error(e));
+    if (!isMobile) {
+      const video = texture.image;
+      if (video && video instanceof HTMLVideoElement) {
+        video.muted = !isExpanded;
+        if (isExpanded) {
+          video.volume = 0.5;
+          video.play().catch((e) => console.error(e));
+        }
       }
     }
 
@@ -196,7 +208,7 @@ function SpiralCard({
       cardTexture.wrapS = cardTexture.wrapT = THREE.RepeatWrapping;
       cardTexture.repeat.set(1, 1);
     }
-  }, [videoTexture, cardTexture, isExpanded]);
+  }, [texture, cardTexture, isExpanded, isMobile]);
 
   const shape = new THREE.Shape();
   const cardWidth = 1.3;
@@ -246,11 +258,7 @@ function SpiralCard({
       <mesh position={[0, 0, 0.05]}>
         <extrudeGeometry args={[shape, extrudeSettings]} />
         {isMobile ? (
-          <meshBasicMaterial
-            color="#ffffff"
-            transparent
-            opacity={0.3}
-          />
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.3} />
         ) : (
           <meshPhysicalMaterial
             color="#ffffff"
@@ -271,7 +279,7 @@ function SpiralCard({
       <mesh position={[0, 0.2, 0.06]}>
         <planeGeometry args={[cardWidth - 0.1, cardHeight * 0.75]} />
         <meshBasicMaterial
-          map={videoTexture}
+          map={texture}
           toneMapped={false}
           color="white"
           side={THREE.FrontSide}
@@ -305,9 +313,13 @@ function SpiralCard({
   );
 }
 
-function Particles({ scrollProgress }: { scrollProgress: number }) {
-  const { viewport } = useThree();
-  const isMobile = viewport.width < 5;
+function Particles({
+  scrollProgress,
+  isMobile,
+}: {
+  scrollProgress: number;
+  isMobile: boolean;
+}) {
   const count = isMobile ? 50 : 500;
   const mesh = useRef<THREE.Points>(null);
 
@@ -328,15 +340,17 @@ function Particles({ scrollProgress }: { scrollProgress: number }) {
   }, []);
 
   const [attributes] = useState(() => {
-    const pos = new Float32Array(count * 3);
-    const cols = new Float32Array(count * 3);
+    // Generate max particles (500) to be safe, render partial if mobile
+    const maxCount = 500;
+    const pos = new Float32Array(maxCount * 3);
+    const cols = new Float32Array(maxCount * 3);
     const colorPalette = [
       new THREE.Color("#F5B339"),
       new THREE.Color("#F7ADCF"),
       new THREE.Color("#F395C2"),
     ];
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < maxCount; i++) {
       pos[i * 3] = (Math.random() - 0.5) * 20;
       pos[i * 3 + 1] = (Math.random() - 0.5) * 20;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 10;
@@ -385,7 +399,13 @@ function Particles({ scrollProgress }: { scrollProgress: number }) {
   );
 }
 
-function Scene({ scrollProgress }: { scrollProgress: number }) {
+function Scene({
+  scrollProgress,
+  isMobile,
+}: {
+  scrollProgress: number;
+  isMobile: boolean;
+}) {
   const cards = Array.from({ length: 6 }, (_, i) => i);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
@@ -399,12 +419,7 @@ function Scene({ scrollProgress }: { scrollProgress: number }) {
       <ambientLight intensity={1.5} />
       <pointLight position={[10, 10, 10]} intensity={1} />
       <pointLight position={[-10, -10, -10]} intensity={0.5} color="#ff00ff" />
-      <spotLight
-        position={[0, 10, 0]}
-        angle={0.5}
-        penumbra={1}
-        intensity={2}
-      />
+      <spotLight position={[0, 10, 0]} angle={0.5} penumbra={1} intensity={2} />
 
       <mesh
         position={[0, 0, -5]}
@@ -416,7 +431,7 @@ function Scene({ scrollProgress }: { scrollProgress: number }) {
       </mesh>
 
       <ImageSequenceCup scrollProgress={scrollProgress} />
-      <Particles scrollProgress={scrollProgress} />
+      <Particles scrollProgress={scrollProgress} isMobile={isMobile} />
 
       {cards.map((i) => (
         <SpiralCard
@@ -426,6 +441,7 @@ function Scene({ scrollProgress }: { scrollProgress: number }) {
           scrollProgress={scrollProgress}
           expandedIndex={expandedIndex}
           setExpandedIndex={setExpandedIndex}
+          isMobile={isMobile}
         />
       ))}
     </>
@@ -436,6 +452,16 @@ export default function ScrollSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0.5, y: 0.5 });
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     let ticking = false;
@@ -485,31 +511,38 @@ export default function ScrollSection() {
   return (
     <div ref={containerRef} className="relative w-full h-[600vh] z-30">
       <div className="sticky top-0 left-0 w-full h-[100dvh] overflow-hidden">
+        {/* Background Layer */}
         <div
           className="absolute inset-0 z-0 transition-transform duration-300 ease-out"
           style={{
             backgroundImage: "url(/imgbackground.webp)",
             backgroundSize: "cover",
             backgroundPosition: "center",
-            transform: `scale(1.05) translate(${(mousePosition.x - 0.5) * 20
-              }px, ${(mousePosition.y - 0.5) * 20}px)`,
+            transform: `scale(1.05) translate(${
+              (mousePosition.x - 0.5) * 20
+            }px, ${(mousePosition.y - 0.5) * 20}px)`,
             opacity: 1,
           }}
         />
 
+        {/* 3D Scene Layer - Optimized for mobile */}
         <div className="relative z-10 w-full h-full">
           <Canvas
             camera={{ position: [0, 0, 8], fov: 45 }}
-            dpr={[1, 1]}
+            dpr={[1, isMobile ? 1 : 1.2]}
             style={{ touchAction: "pan-y" }}
             gl={{
               preserveDrawingBuffer: true,
               powerPreference: "high-performance",
-              antialias: false,
+              antialias: !isMobile,
             }}
           >
             <Suspense fallback={null}>
-              <Scene scrollProgress={scrollProgress} />
+              <Scene
+                key={isMobile ? "mobile" : "desktop"}
+                scrollProgress={scrollProgress}
+                isMobile={isMobile}
+              />
             </Suspense>
           </Canvas>
 
