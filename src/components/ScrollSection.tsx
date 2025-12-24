@@ -111,21 +111,49 @@ function VideoSurface({
 }) {
   const videoTexture = useVideoTexture(videoUrl, {
     unsuspend: "canplay",
-    muted: !isExpanded,
+    muted: true, // Always start muted for autoplay policy
     loop: true,
     start: true,
     playsInline: true,
+    crossOrigin: "Anonymous",
   });
 
   useEffect(() => {
     videoTexture.colorSpace = THREE.SRGBColorSpace;
     const video = videoTexture.image;
+
+    // Aggressive mobile autoplay enforcement
     if (video) {
-      video.muted = !isExpanded;
-      if (isExpanded) {
-        video.volume = 0.5;
-        video.play().catch((e) => console.error("Video play failed", e));
-      }
+      video.playsInline = true;
+      video.muted = true; // Crucial for mobile autoplay
+      video.loop = true;
+
+      const forcePlay = () => {
+        video.play().then(() => {
+          // If expanded, we might want sound, but start muted to ensure play
+          if (isExpanded) {
+            video.muted = false;
+            // video.volume = 0.5; // Optional
+          }
+        }).catch((e) => {
+          console.warn("Autoplay blocked, waiting for interaction", e);
+        });
+      };
+
+      forcePlay();
+
+      // Retry on any user interaction (touch/scroll)
+      const handleUserInteraction = () => {
+        if (video.paused) forcePlay();
+      };
+
+      window.addEventListener('touchstart', handleUserInteraction, { passive: true });
+      window.addEventListener('scroll', handleUserInteraction, { passive: true });
+
+      return () => {
+        window.removeEventListener('touchstart', handleUserInteraction);
+        window.removeEventListener('scroll', handleUserInteraction);
+      };
     }
   }, [videoTexture, isExpanded]);
 
@@ -134,31 +162,6 @@ function VideoSurface({
       <planeGeometry args={[width, height]} />
       <meshBasicMaterial
         map={videoTexture}
-        toneMapped={false}
-        color="white"
-        side={THREE.FrontSide}
-      />
-    </mesh>
-  );
-}
-
-function ImageSurface({
-  imageUrl,
-  width,
-  height,
-}: {
-  imageUrl: string;
-  width: number;
-  height: number;
-}) {
-  const texture = useTexture(imageUrl);
-  texture.colorSpace = THREE.SRGBColorSpace;
-
-  return (
-    <mesh position={[0, 0.2, 0.06]}>
-      <planeGeometry args={[width, height]} />
-      <meshBasicMaterial
-        map={texture}
         toneMapped={false}
         color="white"
         side={THREE.FrontSide}
@@ -310,19 +313,9 @@ function SpiralCard({
       </mesh>
 
       {/* 
-        Safe Video Fallback Logic:
-        1. Try to render VideoSurface (async loading)
-        2. While loading or if blocked, fallback to ImageSurface (instant)
+        Video Only - Suspense allows progressive loading without full blocking
       */}
-      <Suspense
-        fallback={
-          <ImageSurface
-            imageUrl={data.image}
-            width={cardWidth - 0.1}
-            height={cardHeight * 0.75}
-          />
-        }
-      >
+      <Suspense fallback={null}>
         <VideoSurface
           videoUrl={data.video}
           width={cardWidth - 0.1}
