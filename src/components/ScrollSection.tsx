@@ -518,9 +518,8 @@ export default function ScrollSection() {
             backgroundImage: "url(/imgbackground.webp)",
             backgroundSize: "cover",
             backgroundPosition: "center",
-            transform: `scale(1.05) translate(${
-              (mousePosition.x - 0.5) * 20
-            }px, ${(mousePosition.y - 0.5) * 20}px)`,
+            transform: `scale(1.05) translate(${(mousePosition.x - 0.5) * 20
+              }px, ${(mousePosition.y - 0.5) * 20}px)`,
             opacity: 1,
           }}
         />
@@ -532,9 +531,9 @@ export default function ScrollSection() {
             dpr={[1, isMobile ? 1 : 1.2]}
             style={{ touchAction: "pan-y" }}
             gl={{
-              preserveDrawingBuffer: true,
-              powerPreference: "high-performance",
               antialias: !isMobile,
+              powerPreference: "default",
+              alpha: true,
             }}
           >
             <Suspense fallback={null}>
