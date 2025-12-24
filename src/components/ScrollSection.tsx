@@ -144,18 +144,22 @@ function DesktopVideoSurface({
   );
 }
 
+
+
 function MobileVideoSurface({
   videoUrl,
   width,
   height,
   isExpanded,
   imageUrl,
+  shouldLoad,
 }: {
   videoUrl: string;
   width: number;
   height: number;
   isExpanded: boolean;
   imageUrl: string;
+  shouldLoad: boolean;
 }) {
   const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
   const [isVideoReady, setIsVideoReady] = useState(false);
@@ -170,6 +174,27 @@ function MobileVideoSurface({
   }, [imageTexture]);
 
   useEffect(() => {
+    // If we shouldn't load the video, cleanup if it exists
+    if (!shouldLoad) {
+      if (videoRef.current) {
+        const video = videoRef.current;
+        video.pause();
+        video.src = "";
+        video.load();
+        video.remove();
+        videoRef.current = null;
+      }
+      if (videoTexture) {
+        videoTexture.dispose();
+        setVideoTexture(null);
+      }
+      setIsVideoReady(false);
+      return;
+    }
+
+    // Checking if already loaded to avoid reload
+    if (videoRef.current) return;
+
     // Non-blocking video loading
     const video = document.createElement("video");
     // Transform to mobile-optimized video: "/video1.mp4" -> "/Mobile_video1.mp4"
@@ -213,14 +238,17 @@ function MobileVideoSurface({
     // Timeout fallback - if video doesn't start in 3 seconds, use image
     const timeoutId = setTimeout(() => {
       if (!isVideoReady) {
-        console.warn("Video timeout, falling back to static image");
-        setUseVideoFallback(true);
+        // Only warn if we actually expected it to load
+        if (shouldLoad) {
+          console.warn("Video timeout, falling back to static image");
+          setUseVideoFallback(true);
+        }
       }
     }, 3000);
 
     // Unlock on interaction
     const unlock = () => {
-      if (video.paused) {
+      if (video && video.paused && shouldLoad) {
         video.play().then(() => {
           video.muted = true;
           setIsVideoReady(true);
@@ -235,18 +263,20 @@ function MobileVideoSurface({
 
     return () => {
       clearTimeout(timeoutId);
-      video.removeEventListener("canplay", onCanPlay);
-      video.removeEventListener("loadeddata", onLoadedData);
-      video.removeEventListener("error", onError);
-      video.pause();
-      video.src = "";
-      video.remove();
-      tex.dispose();
+      if (video) {
+        video.removeEventListener("canplay", onCanPlay);
+        video.removeEventListener("loadeddata", onLoadedData);
+        video.removeEventListener("error", onError);
+        video.pause();
+        video.src = "";
+        video.remove();
+      }
+      if (tex) tex.dispose();
       window.removeEventListener("touchstart", unlock);
       window.removeEventListener("scroll", unlock);
       window.removeEventListener("click", unlock);
     };
-  }, [videoUrl, isVideoReady]);
+  }, [videoUrl, shouldLoad]); // Dependency on shouldLoad!
 
   // Handle expansion sound
   useEffect(() => {
@@ -264,13 +294,14 @@ function MobileVideoSurface({
 
   // Manual texture update loop
   useFrame(() => {
-    if (videoTexture && isVideoReady && !useVideoFallback) {
+    if (videoTexture && isVideoReady && !useVideoFallback && shouldLoad) {
       videoTexture.needsUpdate = true;
     }
   });
 
   // Determine which texture to use
-  const activeTexture = (useVideoFallback || !isVideoReady) ? imageTexture : videoTexture;
+  // Show image if: Fallback ON, OR Video Not Ready, OR Should Not Load
+  const activeTexture = (useVideoFallback || !isVideoReady || !shouldLoad) ? imageTexture : videoTexture;
 
   return (
     <mesh position={[0, 0.2, 0.06]}>
@@ -310,18 +341,35 @@ function SpiralCard({
   const isExpanded = expandedIndex === index;
   const isAnyExpanded = expandedIndex !== null;
 
+  // Calculate if this card is the "focused" one (closest to front)
+  // Logic: Angle determines Z position. Max Z = Front.
+  // We compute this card's current angle exactly as used in useFrame animation logic conceptually
+  // Note: we're approximating the frame logic here for render-logic state
   const angleStep = (Math.PI * 2) / total;
   const initialAngle = index * angleStep;
+  const rotationSpeed = Math.PI * 2;
+  const currentAngle = initialAngle + scrollProgress * rotationSpeed;
+  // Sin(angle) gives Z factor. 1 is closest, -1 is farthest.
+  // We consider it "focused" if it's very close to the peak.
+  // With 6 items, peak separation is ~60 degrees.
+  // If sin(angle) > 0.85, it's definitely the front-most item.
+  // sin(60deg) = 0.866. So 0.85 is a safe threshold to pick exactly 1 or 2 items (during transition).
+  const isFocused = Math.sin(currentAngle) > 0.9;
+
+  // Decide if we should load video
+  // Load if: Expanded OR (Mobile AND Focused)
+  // If not mobile, we rely on standard Suspense/Desktop behavior (handled below)
+  const shouldLoadMobileVideo = isExpanded || (isMobile && isFocused);
+
   const yOffset = 0;
 
   useFrame((state, delta) => {
     if (ref.current) {
       const r = scrollProgress;
-      const rotationSpeed = Math.PI * 2;
-      const currentAngle = initialAngle + r * rotationSpeed;
+      const currentAngleFrame = initialAngle + r * rotationSpeed;
 
-      const spiralX = Math.cos(currentAngle) * radius;
-      const spiralZ = Math.sin(currentAngle) * radius;
+      const spiralX = Math.cos(currentAngleFrame) * radius;
+      const spiralZ = Math.sin(currentAngleFrame) * radius;
       const spiralY = yOffset + Math.sin(r * Math.PI * 4 + index) * 0.5;
 
       const targetPos = new THREE.Vector3(spiralX, spiralY, spiralZ);
@@ -446,6 +494,7 @@ function SpiralCard({
           width={cardWidth - 0.1}
           height={cardHeight * 0.75}
           isExpanded={isExpanded}
+          shouldLoad={shouldLoadMobileVideo}
         />
       ) : (
         <Suspense fallback={null}>
