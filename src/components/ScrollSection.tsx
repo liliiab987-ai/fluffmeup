@@ -85,13 +85,13 @@ const CARD_DATA = [
   {
     title: "Heart Delight",
     icon: "🌍",
-    image: "/item5.webp",
+    image: "/01-Photoroom.webp", // Replaced missing item5.webp
     video: "/video5.mp4",
   },
   {
     title: "SPECIAL\nGIFTS ",
     icon: "⭐",
-    image: "/item2.webp",
+    image: "/04-Photoroom.webp", // Replaced missing item2.webp
     video: "/video7.mp4",
   },
 ];
